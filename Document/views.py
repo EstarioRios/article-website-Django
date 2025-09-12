@@ -90,3 +90,64 @@ def sub_comment(request):
 
     except ValueError as ve:
         return Response({"msg": f"{ve}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def edit_comment(request):
+    comment_id = request.data.get("commentId")
+    new_content = request.data.get("newContent")
+
+    user, _ = JWTAuthentication(request)
+    if not user:
+        return Response(
+            {"error": "your JWT is not ok"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not all([comment_id, new_content]):
+        return Response(
+            {"error": "all fields are required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if Comment.objects.filter(id=comment_id).exist():
+        comment = Comment.objects.get(id=comment_id)
+        if comment.owner != user:
+            return Response(
+                {"error": "you are not allowed"}, status=status.HTTP_403_FORBIDDEN
+            )
+        comment.content = new_content
+        comment.save()
+        return Response(
+            {"comment": CommentSerializer(comment).data}, status=status.HTTP_200_OK
+        )
+
+    else:
+        return Response(
+            {"error": f"there is not comment by id: {comment_id}"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def remove_comment(request):
+    comment_id = request.data.get("comentId")
+
+    if not comment_id:
+        return Response(
+            {"error": "comment_id is required field"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not Comment.objects.filter(id=comment_id).exists():
+        return Response(
+            {"error": f"there is no comment by id: {comment_id}"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    comment = Comment.objects.get(id=comment_id)
+    try:
+        comment.delete()
+        return Response({}, status=status.HTTP_200_OK)
+    except ValueError as e:
+        return Response({"error": f"{e}"}, status=status.HTTP_403_FORBIDDEN)
