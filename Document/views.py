@@ -101,7 +101,7 @@ def edit_comment(request):
     user, _ = JWTAuthentication(request)
     if not user:
         return Response(
-            {"error": "your JWT is not ok"}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "your JWT isn't ok"}, status=status.HTTP_400_BAD_REQUEST
         )
 
     if not all([comment_id, new_content]):
@@ -132,6 +132,11 @@ def edit_comment(request):
 @permission_classes([IsAuthenticated])
 def remove_comment(request):
     comment_id = request.data.get("comentId")
+    user, _ = JWTAuthentication(request)
+    if not user:
+        return Response(
+            {"error": "your JWT isn't ok"}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     if not comment_id:
         return Response(
@@ -146,8 +151,57 @@ def remove_comment(request):
         )
 
     comment = Comment.objects.get(id=comment_id)
+    if comment.owner != user:
+        return Response(
+            {"error": "you aren't allowed"}, status=status.HTTP_403_FORBIDDEN
+        )
+
     try:
         comment.delete()
-        return Response({}, status=status.HTTP_200_OK)
+        return Response(
+            {"msg": f"comment by id: {comment_id} deleted"}, status=status.HTTP_200_OK
+        )
+    except ValueError as e:
+        return Response({"error": f"{e}"}, status=status.HTTP_403_FORBIDDEN)
+
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def edit_blog(request):
+    blog_id = request.data.get("blog_id")
+    new_title = request.data.get("new_title")
+    new_description = request.data.get("new_description")
+    new_content = request.data.get("new_content")
+    new_tags = request.data.get("new_tags")
+
+    user, _ = JWTAuthentication(request)
+    if not user:
+        return Response(
+            {"error": "your JWT isn't ok "}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not all(
+        [
+            blog_id,
+            new_title,
+            new_description,
+            new_content,
+            new_tags,
+        ]
+    ):
+        return Response(
+            {"error": "all fields are required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    blog = Blog.objects.filter(id=blog_id)
+    if not blog.exists():
+        return Response({"your blog not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        blog.content = new_content
+        blog.title = new_title
+        blog.description = new_description
+        blog.tags = new_tags
+        blog.save()
     except ValueError as e:
         return Response({"error": f"{e}"}, status=status.HTTP_403_FORBIDDEN)
