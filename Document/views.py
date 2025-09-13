@@ -205,3 +205,159 @@ def edit_blog(request):
         blog.save()
     except ValueError as e:
         return Response({"error": f"{e}"}, status=status.HTTP_403_FORBIDDEN)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def like_comment(request):
+    comment_id = request.data.get("comment_id")
+    user, _ = JWTAuthentication(request)
+    if not user:
+        return Response(
+            {"error": "your JWT isn't ok"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not comment_id:
+        return Response(
+            {"error": "comment_id field is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        comment = Comment.objects.get(id=comment_id)
+    except Comment.DoesNotExist:
+        return Response(
+            {"error": "your comment not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    try:
+        comment_likes = comment.likes
+        comment_likes += 1
+        comment.likes = comment_likes
+        comment.save()
+        return Response(
+            {"msg": "comment liked"},
+            status=status.HTTP_200_OK,
+        )
+    except ValueError as e:
+        return Response(
+            {"error": f"{e}"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def dislike_comment(request):
+    comment_id = request.data.get("comment_id")
+    user, _ = JWTAuthentication(request)
+    if not user:
+        return Response(
+            {"error": "your JWT isn't ok"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not comment_id:
+        return Response(
+            {"error": "comment_id field is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        comment = Comment.objects.get(id=comment_id)
+    except Comment.DoesNotExist:
+        return Response(
+            {"error": "your comment not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    try:
+        comment_dislikes = comment.dislikes
+        comment_dislikes += 1
+        comment.dislikes = comment_dislikes
+        comment.save()
+        return Response(
+            {"msg": "comment disliked"},
+            status=status.HTTP_200_OK,
+        )
+    except ValueError as e:
+        return Response(
+            {"error": f"{e}"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def like_blog(request):
+    blog_id = request.data.get("blog_id")
+    user, _ = JWTAuthentication(request)
+    if not user:
+        return Response(
+            {"error": "your JWT isn't ok"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not blog_id:
+        return Response(
+            {"error": "blog_id field is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        blog = Blog.objects.get(id=blog_id)
+    except Blog.DoesNotExist:
+        return Response(
+            {"error": "your blog not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    try:
+        blog_likes = blog.likes
+        blog_likes += 1
+        blog.likes = blog_likes
+        blog.save()
+        return Response(
+            {"msg": "blog liked"},
+            status=status.HTTP_200_OK,
+        )
+    except ValueError as e:
+        return Response(
+            {"error": f"{e}"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def dislike_blog(request):
+    blog_id = request.data.get("blog_id")
+    user, _ = JWTAuthentication(request)
+    if not user:
+        return Response(
+            {"error": "your JWT isn't ok"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not blog_id:
+        return Response(
+            {"error": "blog_id field is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        blog = Blog.objects.get(id=blog_id)
+    except Comment.DoesNotExist:
+        return Response(
+            {"error": "your blog not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    try:
+        blog_dislikes = blog.dislikes
+        blog_dislikes += 1
+        blog.dislikes = blog_dislikes
+        blog.save()
+        return Response(
+            {"msg": "blog disliked"},
+            status=status.HTTP_200_OK,
+        )
+    except ValueError as e:
+        return Response(
+            {"error": f"{e}"},
+            status=status.HTTP_403_FORBIDDEN,
+        )

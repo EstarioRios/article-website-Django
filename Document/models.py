@@ -10,7 +10,7 @@ class Blog(models.Model):
         null=True, blank=True, default="none"
     )  # tags will be like : "none - lovely - fun"
     likes = models.IntegerField(default=0, blank=False, null=False)
-    dislike = models.IntegerField(default=0, blank=False, null=False)
+    dislikes = models.IntegerField(default=0, blank=False, null=False)
     owner = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE(),
