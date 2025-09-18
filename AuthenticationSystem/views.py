@@ -9,7 +9,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 # ---------------------
 
 from .models import CustomUser
-from .serializers import ListCustomUserSerializer, FullCustomUserSerializer
+from .serializers import (
+    ListCustomUserSerializer,
+    FullCustomUserSerializer,
+)
 
 # ---------------------
 

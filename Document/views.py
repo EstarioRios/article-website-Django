@@ -361,3 +361,115 @@ def dislike_blog(request):
             {"error": f"{e}"},
             status=status.HTTP_403_FORBIDDEN,
         )
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def remove_blog(request):
+    blog_id = request.data.get("blog_id")
+    user, _ = JWTAuthentication(request)
+    if not user:
+        return Response(
+            {"error": "your JWT isn't fine"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not Blog.objects.filter(id=blog_id).exists():
+        return Response(
+            {"error": "your blog not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+    blog = Blog.objects.get(id=blog_id)
+    if user != blog.owner:
+        return Response(
+            {"error": "you aren't allowed"}, status=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        blog.delete()
+        return Response(status=status.HTTP_200_OK)
+    except ValueError as e:
+        return Response(
+            {"error": f"{e}"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def deactive_blog(request):
+    user, _ = JWTAuthentication(request)
+    blog_id = request.data.get("blog_id")
+
+    if not blog_id:
+        return Response(
+            {"error": "blog_id field is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not user:
+        return Response(
+            {"error": "your JWT isn't fine"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not Blog.objects.filter(id=blog_id).exists():
+        return Response(
+            {"error": "your blog not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    blog = Blog.objects.get(id=blog_id)
+
+    if user != blog.owner:
+        return Response(
+            {"error": "you aren't allowed"}, status=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        blog.active = False
+        blog.save()
+        return Response(
+            {"msg": f"blog by id: {blog_id} deactived"}, status=status.HTTP_200_OK
+        )
+    except ValueError as e:
+        return Response(
+            {"error": f"{e}"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def active_blog(request):
+    user, _ = JWTAuthentication(request)
+    blog_id = request.data.get("blog_id")
+
+    if not blog_id:
+        return Response(
+            {"error": "blog_id field is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not user:
+        return Response(
+            {"error": "your JWT isn't fine"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not Blog.objects.filter(id=blog_id).exists():
+        return Response(
+            {"error": "your blog not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    blog = Blog.objects.get(id=blog_id)
+
+    if user != blog.owner:
+        return Response(
+            {"error": "you aren't allowed"}, status=status.HTTP_403_FORBIDDEN
+        )
+
+    try:
+        blog.active = True
+        blog.save()
+        return Response(
+            {"msg": f"blog by id: {blog_id} actived"}, status=status.HTTP_200_OK
+        )
+    except ValueError as e:
+        return Response(
+            {"error": f"{e}"},
+            status=status.HTTP_403_FORBIDDEN,
+        )

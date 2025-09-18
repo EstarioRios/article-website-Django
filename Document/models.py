@@ -18,6 +18,7 @@ class Blog(models.Model):
         blank=False,
         related_name="blogs",
     )
+    active = models.BooleanField(default=True)
 
 
 class Comment(models.Model):
